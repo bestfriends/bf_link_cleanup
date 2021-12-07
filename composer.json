@@ -2,6 +2,6 @@
   "name": "bestfriends/bf_link_cleanup",
   "description": "Removes the host address from urls.",
   "type": "drupal-module",
-  "license": "GPL-2.0-or-later",
+  "license": "GPL-2.0+",
   "minimum-stability": "dev"
 }
