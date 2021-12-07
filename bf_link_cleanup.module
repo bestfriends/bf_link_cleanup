@@ -1,0 +1,48 @@
+<?php
+
+/**
+ * @file
+ * Contains bf_link_cleanup.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\menu_link_content\MenuLinkContentInterface;
+/**
+ * Implements hook_help().
+ */
+function bf_link_cleanup_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the bf_link_cleanup module.
+    case 'help.page.bf_link_cleanup':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Cleans up urls that accintally get pantheon, local, or absolute instead of relative paths.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ */
+function bf_link_cleanup_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
+  if($entity->getEntityType()->id() == "menu_link_content") {
+    $url = $entity->link->uri;
+    $host = \Drupal::request()->getSchemeAndHttpHost();
+    if (str_starts_with($url, $host)) {
+      $entity->set('link', str_replace($host, "internal:", $url));
+    }
+  }
+
+  // if has field body.
+  if($entity->body) {
+    $host = \Drupal::request()->getSchemeAndHttpHost();
+    $bodyText = $entity->body->value;
+    $bodySummary = $entity->body->summary;
+    $bodyFormat = $entity->body->format;
+    if(strpos($bodyText, $host) !== false){
+        $entity->body->setValue(['value' => str_replace($host, "", $bodyText), 'format' => $bodyFormat, 'summary' => $bodySummary]);
+    }
+  }
+}
