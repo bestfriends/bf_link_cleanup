@@ -5,8 +5,9 @@
  * Contains bf_link_cleanup.module.
  */
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\menu_link_content\MenuLinkContentInterface;
+
 /**
  * Implements hook_help().
  */
@@ -26,8 +27,8 @@ function bf_link_cleanup_help($route_name, RouteMatchInterface $route_match) {
 /**
  * Implements hook_entity_presave().
  */
-function bf_link_cleanup_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
-  if($entity->getEntityType()->id() == "menu_link_content") {
+function bf_link_cleanup_entity_presave(EntityInterface $entity) {
+  if ($entity->getEntityType()->id() == "menu_link_content") {
     $url = $entity->link->uri;
     $host = \Drupal::request()->getSchemeAndHttpHost();
     if (str_starts_with($url, $host)) {
@@ -35,14 +36,18 @@ function bf_link_cleanup_entity_presave(Drupal\Core\Entity\EntityInterface $enti
     }
   }
 
-  // if has field body.
-  if($entity->body) {
+  // If has field body.
+  if (method_exists($entity, 'hasField') && $entity->hasField('body')) {
     $host = \Drupal::request()->getSchemeAndHttpHost();
     $bodyText = $entity->body->value;
     $bodySummary = $entity->body->summary;
     $bodyFormat = $entity->body->format;
-    if(strpos($bodyText, $host) !== false){
-        $entity->body->setValue(['value' => str_replace($host, "", $bodyText), 'format' => $bodyFormat, 'summary' => $bodySummary]);
+    if (strpos($bodyText, $host) !== FALSE) {
+      $entity->body->setValue([
+        'value' => str_replace($host, "", $bodyText),
+        'format' => $bodyFormat,
+        'summary' => $bodySummary,
+      ]);
     }
   }
 }
